@@ -1,0 +1,89 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel Principal - Smart Power On S.A.C.</title>
+    <!-- Enlace al archivo CSS externo en la carpeta static -->
+    <link rel="stylesheet" th:href="@{/css/styles.css}" />
+  </head>
+  <body>
+    <header>
+      <span><strong>Smart Power On S.A.C.</strong> | Planta Comas</span>
+      <span>Sistema de Gestión de Procesos</span>
+    </header>
+
+    <div class="container">
+      <div class="alert">
+        <h3 style="margin: 0 0 5px 0">
+          ¡Bienvenido al Panel de Control Global!
+        </h3>
+        <p style="margin: 0" th:text="${mensaje}">Mensaje del sistema</p>
+      </div>
+
+      <h2 style="color: #495057; font-size: 20px; margin-bottom: 20px">
+        Módulos del Sistema (Vista Global de Planta)
+      </h2>
+
+      <div class="row">
+        <!-- 1. ALMACÉN -->
+        <div class="col">
+          <h3>1. Gestión de Inventario y Catálogo</h3>
+          <p>
+            Control de entradas, salidas y actualización de stock de insumos
+            eléctricos (Breakers, Borneras, Relés SIPROTEC).
+          </p>
+          <a href="/almacen/ver" class="btn">Consultar Inventario</a>
+          <span sec:authorize="hasRole('ALMACENERO')" class="badge"
+            >Modo Escritura Habilitado</span
+          >
+        </div>
+
+        <!-- 2. PRODUCCIÓN -->
+        <div class="col col-2">
+          <h3>2. Solicitud y Validación por Proyecto</h3>
+          <p>
+            Creación de proyectos de tableros y carga de listas de materiales
+            (BOM) asociadas al esquema unifilar.
+          </p>
+          <a href="/produccion/ver" class="btn btn-secondary"
+            >Consultar Proyectos</a
+          >
+          <span sec:authorize="hasRole('PRODUCCION')" class="badge"
+            >Modo Escritura Habilitado</span
+          >
+        </div>
+
+        <!-- 3. CALIDAD -->
+        <div class="col col-3">
+          <h3>3. Control de Calidad y Pruebas</h3>
+          <p>
+            Registro de mediciones de tensión y aislamiento, validación técnica
+            y generación de protocolos en PDF.
+          </p>
+          <a href="/calidad/ver" class="btn btn-warning"
+            >Consultar Protocolos</a
+          >
+          <span sec:authorize="hasRole('CALIDAD')" class="badge"
+            >Modo Escritura Habilitado</span
+          >
+        </div>
+
+        <!-- 4. TÉCNICO / MERMAS -->
+        <div class="col col-4">
+          <h3>4. Trazabilidad, Mermas y Devoluciones</h3>
+          <p>
+            Registro de insumos sobrantes tras el ensamblaje, reingresos a
+            almacén y justificación de bajas.
+          </p>
+          <a href="/tecnico/ver" class="btn btn-danger">Consultar Mermas</a>
+          <span sec:authorize="hasRole('TECNICO')" class="badge"
+            >Modo Escritura Habilitado</span
+          >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

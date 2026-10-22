@@ -1,0 +1,323 @@
+<!doctype html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gestión de Inventario - Smart Power On S.A.C.</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1300px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+      h2,
+      h3 {
+        color: #212529;
+        margin-bottom: 15px;
+      }
+      .btn-volver {
+        display: inline-block;
+        margin-bottom: 20px;
+        padding: 8px 14px;
+        background: #6c757d;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+      .btn-volver:hover {
+        background: #5c636a;
+      }
+
+      /* Estilos de Tabla */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 13px;
+      }
+      th,
+      td {
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        text-align: left;
+      }
+      th {
+        background-color: #0d6efd;
+        color: white;
+      }
+      tr:nth-child(even) {
+        background-color: #f8f9fa;
+      }
+
+      /* Alertas y Badges */
+      .badge-stock {
+        background: #198754;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      .alerta-stock-bajo {
+        background-color: #f8d7da !important;
+      }
+      .texto-alerta-rojo {
+        color: #dc3545;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 4px;
+      }
+
+      /* Formulario de Registro */
+      .form-section {
+        background: #f1f3f5;
+        padding: 20px;
+        border-radius: 6px;
+        margin-top: 30px;
+        border-left: 4px solid #198754;
+      }
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #495057;
+      }
+      .form-group input,
+      .form-group select,
+      .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 13px;
+      }
+      .btn-guardar {
+        background: #198754;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .btn-guardar:hover {
+        background: #157347;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/home" class="btn-volver">&larr; Volver al Panel Principal</a>
+
+      <h2>Módulo 1: Gestión de Inventario y Catálogo de Materiales</h2>
+      <p style="color: #6c757d; margin-bottom: 20px">
+        Control de existencias, especificaciones técnicas y ubicación física en
+        planta (Comas).
+      </p>
+
+      <!-- Tabla de Consulta de Inventario -->
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Código / MLFB</th>
+            <th>Descripción</th>
+            <th>Modelo</th>
+            <th>Marca</th>
+            <th>Stock Actual</th>
+            <th>Ubicación (Pasillo / Estante / Nivel)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            th:each="m : ${materiales}"
+            th:classappend="${m.stockActual <= m.stockMinimo} ? 'alerta-stock-bajo' : ''"
+          >
+            <td th:text="${m.idMaterial}">1</td>
+            <td>
+              <strong th:text="${m.codigo}">COD-001</strong><br />
+              <small
+                style="color: #555"
+                th:if="${m.mlfb != null and m.mlfb != ''}"
+                th:text="'MLFB: ' + ${m.mlfb}"
+                >MLFB</small
+              >
+            </td>
+            <td th:text="${m.descripcion}">Descripción del material</td>
+            <td th:text="${m.modelo}">Modelo</td>
+            <td th:text="${m.marca}">Siemens</td>
+            <td>
+              <span
+                class="badge-stock"
+                th:text="${m.stockActual} + ' ' + ${m.unidadMedida}"
+                >10 Unidades</span
+              ><br />
+              <!-- Alerta dinámica en rojo si el stock actual es menor o igual al mínimo -->
+              <span
+                th:if="${m.stockActual <= m.stockMinimo}"
+                class="texto-alerta-rojo"
+                >⚠️ ¡MATERIAL BAJO!</span
+              >
+            </td>
+            <td
+              th:text="'Pasillo: ' + ${m.pasillo} + ' | Estante: ' + ${m.estante} + ' | Nivel: ' + ${m.nivel}"
+            >
+              Ubicación
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(materiales)}">
+            <td
+              colspan="7"
+              style="text-align: center; color: #6c757d; padding: 20px"
+            >
+              No hay materiales registrados en el inventario actualmente.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Sección de Registro / Ingreso Inteligente (Exclusivo para ALMACENERO) -->
+      <div class="form-section" sec:authorize="hasRole('ALMACENERO')">
+        <h3>Registrar Nuevo Ingreso o Alta de Material / Equipo</h3>
+        <p style="font-size: 12px; color: #666; margin-bottom: 15px">
+          Si el código ya existe, el sistema sumará la cantidad ingresada
+          automáticamente al stock actual.
+        </p>
+
+        <form
+          action="#"
+          th:action="@{/almacen/guardar}"
+          th:object="${materialNuevo}"
+          method="post"
+        >
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Código de Artículo:</label>
+              <input
+                type="text"
+                th:field="*{codigo}"
+                required
+                placeholder="Ej: BRK-100A"
+              />
+            </div>
+            <div class="form-group">
+              <label>Nombre / Título Corto:</label>
+              <input
+                type="text"
+                th:field="*{nombre}"
+                required
+                placeholder="Ej: Breaker de Caja Moldeada"
+              />
+            </div>
+            <div class="form-group">
+              <label>Descripción Detallada:</label>
+              <input
+                type="text"
+                th:field="*{descripcion}"
+                placeholder="Ej: Breaker termomagnético 3P 100A"
+              />
+            </div>
+            <div class="form-group">
+              <label>Marca:</label>
+              <input
+                type="text"
+                th:field="*{marca}"
+                placeholder="Ej: Siemens / Schneider"
+              />
+            </div>
+            <div class="form-group">
+              <label>Modelo:</label>
+              <input
+                type="text"
+                th:field="*{modelo}"
+                placeholder="Ej: 3VL2 / SIPROTEC"
+              />
+            </div>
+            <div class="form-group">
+              <label>Código MLFB (Opcional Siemens):</label>
+              <input
+                type="text"
+                th:field="*{mlfb}"
+                placeholder="Ej: 6GT2002-0AA10"
+              />
+            </div>
+            <div class="form-group">
+              <label>Cantidad a Ingresar / Stock Inicial:</label>
+              <input
+                type="number"
+                name="cantidadIngresada"
+                required
+                min="1"
+                value="1"
+              />
+            </div>
+            <div class="form-group">
+              <label>Stock Mínimo (Para Alerta Roja):</label>
+              <input
+                type="number"
+                th:field="*{stockMinimo}"
+                required
+                min="0"
+                value="2"
+              />
+            </div>
+            <div class="form-group">
+              <label>Unidad de Medida:</label>
+              <input type="text" th:field="*{unidadMedida}" value="Unidades" />
+            </div>
+            <div class="form-group">
+              <label>Pasillo:</label>
+              <input
+                type="text"
+                th:field="*{pasillo}"
+                placeholder="Ej: Pasillo A"
+              />
+            </div>
+            <div class="form-group">
+              <label>Estante:</label>
+              <input
+                type="text"
+                th:field="*{estante}"
+                placeholder="Ej: Estante 03"
+              />
+            </div>
+            <div class="form-group">
+              <label>Nivel:</label>
+              <input
+                type="text"
+                th:field="*{nivel}"
+                placeholder="Ej: Nivel 2"
+              />
+            </div>
+          </div>
+          <button type="submit" class="btn-guardar">
+            Procesar Ingreso a Almacén
+          </button>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
