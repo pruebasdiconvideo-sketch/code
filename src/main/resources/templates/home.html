@@ -1,89 +1,241 @@
-<!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
->
-  <head>
-    <meta charset="UTF-8" />
-    <title>Panel Principal - Smart Power On S.A.C.</title>
-    <!-- Enlace al archivo CSS externo en la carpeta static -->
-    <link rel="stylesheet" th:href="@{/css/styles.css}" />
-  </head>
-  <body>
-    <header>
-      <span><strong>Smart Power On S.A.C.</strong> | Planta Comas</span>
-      <span>Sistema de Gestión de Procesos</span>
-    </header>
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard - Smart Power On S.A.C.</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+    <!-- Navbar con control por rol (RF02) -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" th:href="@{/home}">
+                <i class="bi bi-lightning-charge-fill"></i> Smart Power On
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/home}"><i class="bi bi-house-door"></i> Inicio</a>
+                    </li>
+                    <!-- Menú Almacenero (RF03) -->
+                    <li class="nav-item" sec:authorize="hasAnyRole('ALMACENERO', 'ADMINISTRADOR')">
+                        <a class="nav-link" th:href="@{/almacen/inventario}"><i class="bi bi-boxes"></i> Almacén</a>
+                    </li>
+                    <!-- Menú Jefe de Producción (RF10) -->
+                    <li class="nav-item" sec:authorize="hasAnyRole('JEFE_PRODUCCION', 'ADMINISTRADOR')">
+                        <a class="nav-link" th:href="@{/produccion/proyectos}"><i class="bi bi-clipboard-data"></i> Producción</a>
+                    </li>
+                    <!-- Menú Despacho -->
+                    <li class="nav-item" sec:authorize="hasAnyRole('ALMACENERO', 'OPERARIO_ENSAMBLE', 'ADMINISTRADOR')">
+                        <a class="nav-link" th:href="@{/despacho/bandeja}"><i class="bi bi-truck"></i> Despacho</a>
+                    </li>
+                    <!-- Menú Calidad -->
+                    <li class="nav-item" sec:authorize="hasAnyRole('INSPECTOR_CALIDAD', 'JEFE_PRODUCCION', 'ADMINISTRADOR')">
+                        <a class="nav-link" th:href="@{/calidad/pruebas}"><i class="bi bi-clipboard-check"></i> Calidad</a>
+                    </li>
+                    <!-- Menú Merma -->
+                    <li class="nav-item" sec:authorize="hasAnyRole('ALMACENERO', 'OPERARIO_ENSAMBLE', 'JEFE_PRODUCCION', 'ADMINISTRADOR')">
+                        <a class="nav-link" th:href="@{/merma/devoluciones}"><i class="bi bi-recycle"></i> Mermas</a>
+                    </li>
+                    <!-- Menú Admin -->
+                    <li class="nav-item" sec:authorize="hasRole('ADMINISTRADOR')">
+                        <a class="nav-link" th:href="@{/admin/usuarios}"><i class="bi bi-people"></i> Administración</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span sec:authentication="name">Usuario</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><span class="dropdown-item-text small text-muted">
+                                Rol: <span sec:authentication="principal.authorities"></span>
+                            </span></li>
+                            <li><hr class="dropdown-divider"/></li>
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="px-2 py-1">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger w-100">
+                                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
-    <div class="container">
-      <div class="alert">
-        <h3 style="margin: 0 0 5px 0">
-          ¡Bienvenido al Panel de Control Global!
-        </h3>
-        <p style="margin: 0" th:text="${mensaje}">Mensaje del sistema</p>
-      </div>
-
-      <h2 style="color: #495057; font-size: 20px; margin-bottom: 20px">
-        Módulos del Sistema (Vista Global de Planta)
-      </h2>
-
-      <div class="row">
-        <!-- 1. ALMACÉN -->
-        <div class="col">
-          <h3>1. Gestión de Inventario y Catálogo</h3>
-          <p>
-            Control de entradas, salidas y actualización de stock de insumos
-            eléctricos (Breakers, Borneras, Relés SIPROTEC).
-          </p>
-          <a href="/almacen/ver" class="btn">Consultar Inventario</a>
-          <span sec:authorize="hasRole('ALMACENERO')" class="badge"
-            >Modo Escritura Habilitado</span
-          >
+    <!-- Contenido -->
+    <div class="container-fluid py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="h3 mb-1"><i class="bi bi-speedometer2 text-primary"></i> Dashboard</h1>
+                <p class="text-muted" th:text="${mensaje}">Sistema de gestión de procesos</p>
+            </div>
         </div>
 
-        <!-- 2. PRODUCCIÓN -->
-        <div class="col col-2">
-          <h3>2. Solicitud y Validación por Proyecto</h3>
-          <p>
-            Creación de proyectos de tableros y carga de listas de materiales
-            (BOM) asociadas al esquema unifilar.
-          </p>
-          <a href="/produccion/ver" class="btn btn-secondary"
-            >Consultar Proyectos</a
-          >
-          <span sec:authorize="hasRole('PRODUCCION')" class="badge"
-            >Modo Escritura Habilitado</span
-          >
+        <!-- KPIs (RF07 - alertas, RF15 - pendientes, etc.) -->
+        <div class="row g-3 mb-4">
+            <div class="col-sm-6 col-lg-2">
+                <div class="card border-0 shadow-sm text-white bg-primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 small">Materiales</p>
+                                <h3 class="mb-0" th:text="${totalMateriales}">0</h3>
+                            </div>
+                            <i class="bi bi-box-seam fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card border-0 shadow-sm text-white bg-warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 small">Alertas stock</p>
+                                <h3 class="mb-0" th:text="${alertasStockBajo}">0</h3>
+                            </div>
+                            <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card border-0 shadow-sm text-white bg-info">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 small">Pendientes desp.</p>
+                                <h3 class="mb-0" th:text="${solicitudesPendientesDespacho}">0</h3>
+                            </div>
+                            <i class="bi bi-truck fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card border-0 shadow-sm text-white bg-success">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 small">Proyectos</p>
+                                <h3 class="mb-0" th:text="${totalProyectos}">0</h3>
+                            </div>
+                            <i class="bi bi-folder2 fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card border-0 shadow-sm text-white bg-secondary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 small">Despachos</p>
+                                <h3 class="mb-0" th:text="${despachosHoy}">0</h3>
+                            </div>
+                            <i class="bi bi-box-arrow-up-right fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <div class="card border-0 shadow-sm text-white bg-danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <p class="mb-0 small">Mermas pend.</p>
+                                <h3 class="mb-0" th:text="${mermasPendientes}">0</h3>
+                            </div>
+                            <i class="bi bi-trash3 fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- 3. CALIDAD -->
-        <div class="col col-3">
-          <h3>3. Control de Calidad y Pruebas</h3>
-          <p>
-            Registro de mediciones de tensión y aislamiento, validación técnica
-            y generación de protocolos en PDF.
-          </p>
-          <a href="/calidad/ver" class="btn btn-warning"
-            >Consultar Protocolos</a
-          >
-          <span sec:authorize="hasRole('CALIDAD')" class="badge"
-            >Modo Escritura Habilitado</span
-          >
+        <!-- Atajos por rol -->
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAnyRole('ALMACENERO', 'ADMINISTRADOR')">
+                <a th:href="@{/almacen/inventario}" class="card border-0 shadow-sm text-decoration-none text-dark h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="bi bi-boxes text-primary me-3 fs-1"></i>
+                        <div>
+                            <h5 class="card-title mb-1">Inventario</h5>
+                            <p class="card-text small text-muted">Gestionar catálogo y stock</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAnyRole('JEFE_PRODUCCION', 'ADMINISTRADOR')">
+                <a th:href="@{/produccion/proyectos}" class="card border-0 shadow-sm text-decoration-none text-dark h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="bi bi-clipboard-data text-info me-3 fs-1"></i>
+                        <div>
+                            <h5 class="card-title mb-1">Proyectos</h5>
+                            <p class="card-text small text-muted">Crear y administrar proyectos</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAnyRole('ALMACENERO', 'OPERARIO_ENSAMBLE', 'ADMINISTRADOR')">
+                <a th:href="@{/despacho/bandeja}" class="card border-0 shadow-sm text-decoration-none text-dark h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="bi bi-truck text-success me-3 fs-1"></i>
+                        <div>
+                            <h5 class="card-title mb-1">Despacho</h5>
+                            <p class="card-text small text-muted">Preparar y entregar kits</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAnyRole('INSPECTOR_CALIDAD', 'JEFE_PRODUCCION', 'ADMINISTRADOR')">
+                <a th:href="@{/calidad/pruebas}" class="card border-0 shadow-sm text-decoration-none text-dark h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="bi bi-clipboard-check text-warning me-3 fs-1"></i>
+                        <div>
+                            <h5 class="card-title mb-1">Calidad</h5>
+                            <p class="card-text small text-muted">Registrar pruebas funcionales</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4" sec:authorize="hasAnyRole('ALMACENERO', 'OPERARIO_ENSAMBLE', 'JEFE_PRODUCCION', 'ADMINISTRADOR')">
+                <a th:href="@{/merma/devoluciones}" class="card border-0 shadow-sm text-decoration-none text-dark h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="bi bi-recycle text-danger me-3 fs-1"></i>
+                        <div>
+                            <h5 class="card-title mb-1">Mermas y Devoluciones</h5>
+                            <p class="card-text small text-muted">Reintegrar o dar de baja materiales</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-6 col-lg-4" sec:authorize="hasRole('ADMINISTRADOR')">
+                <a th:href="@{/admin/usuarios}" class="card border-0 shadow-sm text-decoration-none text-dark h-100">
+                    <div class="card-body d-flex align-items-center">
+                        <i class="bi bi-people text-secondary me-3 fs-1"></i>
+                        <div>
+                            <h5 class="card-title mb-1">Administración</h5>
+                            <p class="card-text small text-muted">Gestionar usuarios y roles</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
-
-        <!-- 4. TÉCNICO / MERMAS -->
-        <div class="col col-4">
-          <h3>4. Trazabilidad, Mermas y Devoluciones</h3>
-          <p>
-            Registro de insumos sobrantes tras el ensamblaje, reingresos a
-            almacén y justificación de bajas.
-          </p>
-          <a href="/tecnico/ver" class="btn btn-danger">Consultar Mermas</a>
-          <span sec:authorize="hasRole('TECNICO')" class="badge"
-            >Modo Escritura Habilitado</span
-          >
-        </div>
-      </div>
     </div>
-  </body>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Usuarios - Smart Power On S.A.C.</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1 class="h3 mb-0"><i class="bi bi-people text-secondary"></i> Gestión de Usuarios y Roles</h1>
+            <button class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modalNuevoUsuario">
+                <i class="bi bi-person-plus"></i> Nuevo usuario
+            </button>
+        </div>
+        <p class="text-muted">RF03 - El Administrador gestiona cuentas de usuario y asigna roles (OE6).</p>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-secondary">
+                            <tr><th>ID</th><th>Nombre completo</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th class="text-end">Acciones</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="u : ${usuarios}">
+                                <td th:text="${u.idUsuario}">1</td>
+                                <td th:text="${u.nombreCompleto}">Nombre</td>
+                                <td><code th:text="${u.correo}">correo</code></td>
+                                <td><span class="badge bg-info" th:text="${u.rol.nombre}">ADMINISTRADOR</span></td>
+                                <td>
+                                    <span class="badge" th:classappend="${u.activo} ? 'bg-success' : 'bg-danger'"
+                                          th:text="${u.activo} ? 'ACTIVO' : 'INACTIVO'">ACTIVO</span>
+                                </td>
+                                <td th:text="${u.ultimoAcceso} ?: 'Nunca'">2026-01-01</td>
+                                <td class="text-end">
+                                    <a th:href="@{/admin/usuarios/{id}/editar(id=${u.idUsuario})}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <form th:action="@{/api/usuarios/{id}/desactivar(id=${u.idUsuario})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Desactivar este usuario?')">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-x-circle"></i> Desactivar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalNuevoUsuario" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/api/usuarios}" th:object="${usuarioNuevo}" method="post">
+                    <div class="modal-header bg-secondary text-white">
+                        <h5 class="modal-title"><i class="bi bi-person-plus"></i> Crear nuevo usuario</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre completo *</label>
+                            <input type="text" class="form-control" th:field="*{nombreCompleto}" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Correo electrónico *</label>
+                            <input type="email" class="form-control" th:field="*{correo}" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Rol *</label>
+                            <select class="form-select" th:field="*{rol}">
+                                <option th:each="r : ${roles}" th:value="${r.idRol}" th:text="${r.nombre}">ADMINISTRADOR</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña inicial *</label>
+                            <input type="password" class="form-control" name="passwordInicial" required/>
+                            <small class="text-muted">Se almacenará cifrada con BCrypt (RNF04).</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Crear usuario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

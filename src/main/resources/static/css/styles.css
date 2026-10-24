@@ -1,111 +1,126 @@
+/* ===========================================================
+   Smart Power On S.A.C. - Estilos personalizados
+   Complementan Bootstrap 5.3.3 (RNF01, RNF10)
+   =========================================================== */
+
+:root {
+    --spo-primary: #1e3a8a;
+    --spo-secondary: #6b7280;
+    --spo-success: #16a34a;
+    --spo-warning: #f59e0b;
+    --spo-danger: #dc2626;
+    --spo-light: #f3f4f6;
+}
+
 body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f6f9;
-  margin: 0;
-  padding: 0;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f8fafc;
+    color: #1f2937;
+    font-size: 0.95rem;
 }
 
-header {
-  background-color: #343a40;
-  color: white;
-  padding: 15px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Navbar branding */
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
 }
 
-.container {
-  max-width: 1100px;
-  margin: 30px auto;
-  padding: 0 15px;
+/* Card elevation */
+.card {
+    border-radius: 0.5rem;
 }
 
-.alert {
-  background-color: #e2e3e5;
-  border: 1px solid #d6d8db;
-  padding: 15px;
-  border-radius: 5px;
-  margin-bottom: 25px;
+.card-header {
+    font-weight: 600;
+    letter-spacing: -0.2px;
 }
 
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+/* Tablas más compactas */
+.table > :not(caption) > * > * {
+    padding: 0.55rem 0.5rem;
+    vertical-align: middle;
 }
 
-.col {
-  flex: 1;
-  min-width: 45%;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  border-top: 4px solid #007bff;
-}
-
-.col-2 {
-  border-top-color: #6c757d;
-}
-.col-3 {
-  border-top-color: #ffc107;
-}
-.col-4 {
-  border-top-color: #dc3545;
-}
-
-h3 {
-  margin-top: 0;
-  color: #333;
-}
-
-p {
-  color: #666;
-  font-size: 14px;
-}
-
-.btn {
-  display: inline-block;
-  padding: 8px 12px;
-  background: #007bff;
-  color: white;
-  text-decoration: none;
-  border-radius: 4px;
-  font-size: 13px;
-  margin-top: 10px;
-}
-
-.btn:hover {
-  background: #0056b3;
-}
-
-.btn-secondary {
-  background-color: #6c757d;
-}
-.btn-secondary:hover {
-  background-color: #5a6268;
-}
-
-.btn-warning {
-  background-color: #d39e00;
-  color: #fff;
-}
-.btn-warning:hover {
-  background-color: #b08400;
-}
-
-.btn-danger {
-  background-color: #dc3545;
-}
-.btn-danger:hover {
-  background-color: #bd2130;
-}
-
+/* Badges de estado más legibles */
 .badge {
-  background: #28a745;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 11px;
-  margin-left: 5px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+}
+
+/* Alertas de stock bajo (RF07) */
+.alert-warning {
+    background-color: #fef3c7;
+    border-color: #fde68a;
+}
+
+/* Botones redondeados estándar */
+.btn {
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+/* Code snippets */
+code {
+    background-color: #f1f5f9;
+    color: #1e40af;
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.25rem;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    font-size: 0.85em;
+}
+
+/* Sidebar / móvil */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: #1e3a8a;
+        border-radius: 0.5rem;
+        margin-top: 0.5rem;
+        padding: 1rem;
+    }
+}
+
+/* Forms */
+.form-control:focus, .form-select:focus {
+    border-color: #1e3a8a;
+    box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.15);
+}
+
+/* KPI cards del home */
+.card.bg-primary .card-body,
+.card.bg-info .card-body,
+.card.bg-success .card-body,
+.card.bg-warning .card-body,
+.card.bg-secondary .card-body,
+.card.bg-danger .card-body {
+    border-radius: 0.5rem;
+}
+
+/* Hover effect para cards enlaces */
+a.card:hover {
+    transform: translateY(-2px);
+    transition: transform 0.15s ease;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+/* Footer fijo de login */
+.login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsividad para tablas largas */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Animación para alertas */
+.alert {
+    animation: fadeIn 0.25s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
 }

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Proyectos - Smart Power On S.A.C.</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1"><i class="bi bi-clipboard-data text-info"></i> Proyectos de Tableros</h1>
+                <p class="text-muted mb-0">Proceso 2 - Solicitud y Validación de Materiales (RF10-RF14)</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoProyecto">
+                <i class="bi bi-plus-circle"></i> Nuevo proyecto
+            </button>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <i class="bi bi-truck text-info"></i> Solicitudes pendientes de despacho (RF15)
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-info">
+                            <tr><th>#</th><th>Proyecto</th><th>Solicitante</th><th>Costo Total</th><th>Estado</th><th class="text-end">Acción</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="s : ${solicitudesPendientes}">
+                                <td th:text="${s.idSolicitud}">1</td>
+                                <td th:text="${s.proyecto.codigo + ' - ' + s.proyecto.cliente}">PROY-001</td>
+                                <td th:text="${s.usuarioSolicitante.nombreCompleto}">Jefe</td>
+                                <td>S/ <span th:text="${#numbers.formatDecimal(s.costoTotal,1,2)}">0.00</span></td>
+                                <td><span class="badge bg-info" th:text="${s.estado}">LISTA_DESPACHO</span></td>
+                                <td class="text-end">
+                                    <a th:href="@{/despacho/bandeja}" class="btn btn-sm btn-success"><i class="bi bi-truck"></i> Despachar</a>
+                                </td>
+                            </tr>
+                            <tr th:if="${solicitudesPendientes.isEmpty()}">
+                                <td colspan="6" class="text-center text-muted py-3">No hay solicitudes pendientes.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-folder2 text-info"></i> Proyectos activos (RF10)</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-primary">
+                            <tr><th>Código</th><th>Cliente</th><th>Presupuesto</th><th>Inicio</th><th>Estado</th><th class="text-end">Acciones</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${proyectos}">
+                                <td><code th:text="${p.codigo}">PROY-001</code></td>
+                                <td th:text="${p.cliente}">Cliente</td>
+                                <td>S/ <span th:text="${#numbers.formatDecimal(p.presupuesto,1,2)}">0.00</span></td>
+                                <td th:text="${p.fechaInicio}">2026-01-01</td>
+                                <td><span class="badge bg-success" th:text="${p.estado}">ACTIVO</span></td>
+                                <td class="text-end">
+                                    <a th:href="@{/produccion/solicitudes/{id}(id=${p.idProyecto})}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-list"></i> Solicitudes
+                                    </a>
+                                    <a th:href="@{/produccion/solicitud/nueva/{id}(id=${p.idProyecto})}" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-plus"></i> Nueva solicitud
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalNuevoProyecto" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form th:action="@{/api/produccion/proyectos}" th:object="${proyectoNuevo}" method="post">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Crear nuevo proyecto</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Código *</label>
+                            <input type="text" class="form-control" th:field="*{codigo}" placeholder="PROY-004" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Cliente *</label>
+                            <input type="text" class="form-control" th:field="*{cliente}" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" th:field="*{descripcion}" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label class="form-label">Presupuesto (S/) *</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{presupuesto}" required/>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Fecha inicio *</label>
+                                <input type="date" class="form-control" th:field="*{fechaInicio}" required/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Crear proyecto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

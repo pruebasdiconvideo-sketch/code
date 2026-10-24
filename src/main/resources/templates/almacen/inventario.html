@@ -1,323 +1,178 @@
-<!doctype html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:sec="http://www.thymeleaf.org/extras/spring-security6"
->
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gestión de Inventario - Smart Power On S.A.C.</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-        padding: 20px;
-      }
-      .container {
-        max-width: 1300px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-      }
-      h2,
-      h3 {
-        color: #212529;
-        margin-bottom: 15px;
-      }
-      .btn-volver {
-        display: inline-block;
-        margin-bottom: 20px;
-        padding: 8px 14px;
-        background: #6c757d;
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        font-size: 13px;
-      }
-      .btn-volver:hover {
-        background: #5c636a;
-      }
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Inventario - Smart Power On S.A.C.</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+    <div th:replace="~{fragments/navbar :: nav}"></div>
 
-      /* Estilos de Tabla */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-        font-size: 13px;
-      }
-      th,
-      td {
-        border: 1px solid #dee2e6;
-        padding: 10px;
-        text-align: left;
-      }
-      th {
-        background-color: #0d6efd;
-        color: white;
-      }
-      tr:nth-child(even) {
-        background-color: #f8f9fa;
-      }
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1"><i class="bi bi-boxes text-primary"></i> Inventario y Catálogo de Materiales</h1>
+                <p class="text-muted mb-0">Proceso 1 - Gestión de Inventario (RF05-RF09)</p>
+            </div>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalNuevoMaterial">
+                <i class="bi bi-plus-circle"></i> Nuevo material
+            </button>
+        </div>
 
-      /* Alertas y Badges */
-      .badge-stock {
-        background: #198754;
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-weight: bold;
-      }
-      .alerta-stock-bajo {
-        background-color: #f8d7da !important;
-      }
-      .texto-alerta-rojo {
-        color: #dc3545;
-        font-weight: bold;
-        display: inline-block;
-        margin-top: 4px;
-      }
+        <!-- Alerta de stock bajo (RF07) -->
+        <div class="alert alert-warning d-flex align-items-center" th:if="${alertasStock != null and !alertasStock.isEmpty()}">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <div>
+                <strong>Atención:</strong> Tienes <span th:text="${alertasStock.size()}">0</span> materiales con stock bajo:
+                <span th:each="m : ${alertasStock}">
+                    <span class="badge bg-warning text-dark me-1" th:text="${m.codigo} + ' (' + ${m.stockActual} + ' und)'"></span>
+                </span>
+            </div>
+        </div>
 
-      /* Formulario de Registro */
-      .form-section {
-        background: #f1f3f5;
-        padding: 20px;
-        border-radius: 6px;
-        margin-top: 30px;
-        border-left: 4px solid #198754;
-      }
-      .form-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 15px;
-        margin-bottom: 15px;
-      }
-      .form-group label {
-        display: block;
-        font-size: 12px;
-        font-weight: bold;
-        margin-bottom: 5px;
-        color: #495057;
-      }
-      .form-group input,
-      .form-group select,
-      .form-group textarea {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 13px;
-      }
-      .btn-guardar {
-        background: #198754;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      .btn-guardar:hover {
-        background: #157347;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <a href="/home" class="btn-volver">&larr; Volver al Panel Principal</a>
+        <!-- Filtros (RF08) -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+                <form method="get" th:action="@{/almacen/inventario}">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="codigo" placeholder="Código..." th:value="${param.codigo}"/>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="nombre" placeholder="Nombre..." th:value="${param.nombre}"/>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="text" class="form-control" name="categoria" placeholder="Categoría..." th:value="${param.categoria}"/>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-primary w-100"><i class="bi bi-search"></i> Buscar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-      <h2>Módulo 1: Gestión de Inventario y Catálogo de Materiales</h2>
-      <p style="color: #6c757d; margin-bottom: 20px">
-        Control de existencias, especificaciones técnicas y ubicación física en
-        planta (Comas).
-      </p>
-
-      <!-- Tabla de Consulta de Inventario -->
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Código / MLFB</th>
-            <th>Descripción</th>
-            <th>Modelo</th>
-            <th>Marca</th>
-            <th>Stock Actual</th>
-            <th>Ubicación (Pasillo / Estante / Nivel)</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            th:each="m : ${materiales}"
-            th:classappend="${m.stockActual <= m.stockMinimo} ? 'alerta-stock-bajo' : ''"
-          >
-            <td th:text="${m.idMaterial}">1</td>
-            <td>
-              <strong th:text="${m.codigo}">COD-001</strong><br />
-              <small
-                style="color: #555"
-                th:if="${m.mlfb != null and m.mlfb != ''}"
-                th:text="'MLFB: ' + ${m.mlfb}"
-                >MLFB</small
-              >
-            </td>
-            <td th:text="${m.descripcion}">Descripción del material</td>
-            <td th:text="${m.modelo}">Modelo</td>
-            <td th:text="${m.marca}">Siemens</td>
-            <td>
-              <span
-                class="badge-stock"
-                th:text="${m.stockActual} + ' ' + ${m.unidadMedida}"
-                >10 Unidades</span
-              ><br />
-              <!-- Alerta dinámica en rojo si el stock actual es menor o igual al mínimo -->
-              <span
-                th:if="${m.stockActual <= m.stockMinimo}"
-                class="texto-alerta-rojo"
-                >⚠️ ¡MATERIAL BAJO!</span
-              >
-            </td>
-            <td
-              th:text="'Pasillo: ' + ${m.pasillo} + ' | Estante: ' + ${m.estante} + ' | Nivel: ' + ${m.nivel}"
-            >
-              Ubicación
-            </td>
-          </tr>
-          <tr th:if="${#lists.isEmpty(materiales)}">
-            <td
-              colspan="7"
-              style="text-align: center; color: #6c757d; padding: 20px"
-            >
-              No hay materiales registrados en el inventario actualmente.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- Sección de Registro / Ingreso Inteligente (Exclusivo para ALMACENERO) -->
-      <div class="form-section" sec:authorize="hasRole('ALMACENERO')">
-        <h3>Registrar Nuevo Ingreso o Alta de Material / Equipo</h3>
-        <p style="font-size: 12px; color: #666; margin-bottom: 15px">
-          Si el código ya existe, el sistema sumará la cantidad ingresada
-          automáticamente al stock actual.
-        </p>
-
-        <form
-          action="#"
-          th:action="@{/almacen/guardar}"
-          th:object="${materialNuevo}"
-          method="post"
-        >
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Código de Artículo:</label>
-              <input
-                type="text"
-                th:field="*{codigo}"
-                required
-                placeholder="Ej: BRK-100A"
-              />
+        <!-- Tabla de materiales (RF08) -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Categoría</th>
+                                <th class="text-center">Stock</th>
+                                <th class="text-center">Mínimo</th>
+                                <th class="text-center">Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="m : ${materiales}">
+                                <td><code th:text="${m.codigo}">7SJ62</code></td>
+                                <td th:text="${m.nombre}">Relé SIPROTEC</td>
+                                <td><span class="badge bg-secondary" th:text="${m.categoria}">EQUIPO</span></td>
+                                <td class="text-center">
+                                    <span class="badge"
+                                          th:classappend="${m.stockBajo} ? 'bg-danger' : 'bg-success'"
+                                          th:text="${m.stockActual}">0</span>
+                                </td>
+                                <td class="text-center" th:text="${m.stockMinimo}">0</td>
+                                <td class="text-center">
+                                    <span class="badge bg-success" th:text="${m.estado}">ACTIVO</span>
+                                </td>
+                                <td class="text-end">
+                                    <a th:href="@{/almacen/trazabilidad/{codigo}(codigo=${m.codigo})}"
+                                       class="btn btn-sm btn-outline-info" title="Trazabilidad">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr th:if="${materiales.isEmpty()}">
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No se encontraron materiales con los filtros aplicados.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="form-group">
-              <label>Nombre / Título Corto:</label>
-              <input
-                type="text"
-                th:field="*{nombre}"
-                required
-                placeholder="Ej: Breaker de Caja Moldeada"
-              />
-            </div>
-            <div class="form-group">
-              <label>Descripción Detallada:</label>
-              <input
-                type="text"
-                th:field="*{descripcion}"
-                placeholder="Ej: Breaker termomagnético 3P 100A"
-              />
-            </div>
-            <div class="form-group">
-              <label>Marca:</label>
-              <input
-                type="text"
-                th:field="*{marca}"
-                placeholder="Ej: Siemens / Schneider"
-              />
-            </div>
-            <div class="form-group">
-              <label>Modelo:</label>
-              <input
-                type="text"
-                th:field="*{modelo}"
-                placeholder="Ej: 3VL2 / SIPROTEC"
-              />
-            </div>
-            <div class="form-group">
-              <label>Código MLFB (Opcional Siemens):</label>
-              <input
-                type="text"
-                th:field="*{mlfb}"
-                placeholder="Ej: 6GT2002-0AA10"
-              />
-            </div>
-            <div class="form-group">
-              <label>Cantidad a Ingresar / Stock Inicial:</label>
-              <input
-                type="number"
-                name="cantidadIngresada"
-                required
-                min="1"
-                value="1"
-              />
-            </div>
-            <div class="form-group">
-              <label>Stock Mínimo (Para Alerta Roja):</label>
-              <input
-                type="number"
-                th:field="*{stockMinimo}"
-                required
-                min="0"
-                value="2"
-              />
-            </div>
-            <div class="form-group">
-              <label>Unidad de Medida:</label>
-              <input type="text" th:field="*{unidadMedida}" value="Unidades" />
-            </div>
-            <div class="form-group">
-              <label>Pasillo:</label>
-              <input
-                type="text"
-                th:field="*{pasillo}"
-                placeholder="Ej: Pasillo A"
-              />
-            </div>
-            <div class="form-group">
-              <label>Estante:</label>
-              <input
-                type="text"
-                th:field="*{estante}"
-                placeholder="Ej: Estante 03"
-              />
-            </div>
-            <div class="form-group">
-              <label>Nivel:</label>
-              <input
-                type="text"
-                th:field="*{nivel}"
-                placeholder="Ej: Nivel 2"
-              />
-            </div>
-          </div>
-          <button type="submit" class="btn-guardar">
-            Procesar Ingreso a Almacén
-          </button>
-        </form>
-      </div>
+        </div>
     </div>
-  </body>
+
+    <!-- Modal nuevo material (RF05, P1-RN01) -->
+    <div class="modal fade" id="modalNuevoMaterial" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <form th:action="@{/api/almacen/materiales}" th:object="${materialNuevo}" method="post" id="formNuevoMaterial">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title"><i class="bi bi-plus-circle"></i> Registrar nuevo material</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Código fabricante *</label>
+                                <input type="text" class="form-control" th:field="*{codigo}" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre *</label>
+                                <input type="text" class="form-control" th:field="*{nombre}" required/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Especificación técnica *</label>
+                                <textarea class="form-control" th:field="*{especificacionTecnica}" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Categoría</label>
+                                <select class="form-select" th:field="*{categoria}">
+                                    <option value="EQUIPO">Equipo</option>
+                                    <option value="BREAKER">Breaker</option>
+                                    <option value="INSUMO">Insumo</option>
+                                    <option value="HERRAJE">Herraje</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Marca</label>
+                                <input type="text" class="form-control" th:field="*{marca}"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Modelo</label>
+                                <input type="text" class="form-control" th:field="*{modelo}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Stock mínimo *</label>
+                                <input type="number" class="form-control" th:field="*{stockMinimo}" min="0" required/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Stock inicial</label>
+                                <input type="number" class="form-control" th:field="*{stockActual}" min="0" value="0"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Precio unitario</label>
+                                <input type="number" step="0.01" class="form-control" th:field="*{precioUnitario}"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Unidad</label>
+                                <input type="text" class="form-control" th:field="*{unidadMedida}" value="UNIDAD"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

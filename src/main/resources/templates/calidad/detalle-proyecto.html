@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Calidad - Proyecto - Smart Power On S.A.C.</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+    <link th:href="@{/css/styles.css}" rel="stylesheet"/>
+</head>
+<body class="bg-light">
+    <div th:replace="~{fragments/navbar :: nav}"></div>
+    <div class="container-fluid py-4">
+        <h1 class="h3 mb-3"><i class="bi bi-clipboard-check text-warning"></i> Pruebas del Proyecto #<span th:text="${idProyecto}">1</span></h1>
+        <div class="alert alert-success" th:if="${puedeCertificar}">
+            <i class="bi bi-check-circle-fill"></i> Todas las pruebas vigentes son CONFORMES. Puedes emitir el certificado.
+        </div>
+        <div class="alert alert-danger" th:unless="${puedeCertificar}">
+            <i class="bi bi-exclamation-triangle-fill"></i> Aún hay pruebas NO_CONFORMES vigentes. Corrige el cableado y vuelve a probar.
+        </div>
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-header bg-light"><i class="bi bi-clock-history"></i> Historial de mediciones</div>
+            <div class="card-body">
+                <table class="table table-sm table-hover">
+                    <thead class="table-warning"><tr><th>#</th><th>Tipo</th><th>Valor medido</th><th>Rango</th><th>Resultado</th><th>Fecha</th><th>Observación</th></tr></thead>
+                    <tbody>
+                        <tr th:each="p : ${pruebas}">
+                            <td th:text="${p.idPrueba}">1</td>
+                            <td th:text="${p.parametro.tipoPrueba}">TENSION</td>
+                            <td th:text="${p.valorMedido}">0</td>
+                            <td th:text="${p.parametro.valorMinimo + ' - ' + p.parametro.valorMaximo + ' ' + p.parametro.unidad}">0-1000 V</td>
+                            <td><span class="badge" th:classappend="${p.resultado == 'CONFORME'} ? 'bg-success' : 'bg-danger'" th:text="${p.resultado}">CONFORME</span></td>
+                            <td th:text="${p.fechaPrueba}">2026-01-01</td>
+                            <td th:text="${p.observacion} ?: ''">Obs</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="card border-0 shadow-sm" th:if="${ordenesObservacion != null and !ordenesObservacion.isEmpty()}">
+            <div class="card-header bg-danger text-white"><i class="bi bi-exclamation-octagon"></i> Órdenes de observación vigentes (RF23)</div>
+            <div class="card-body">
+                <ul>
+                    <li th:each="o : ${ordenesObservacion}">
+                        <strong th:text="${o.parametro.tipoPrueba}">TIPO</strong>: <span th:text="${o.observacion}">Obs</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
